@@ -1,0 +1,51 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Данные: скачиваются с Kaggle, лицензия CC BY-NC-SA — в репозиторий не кладём.
+# Порядок скачивания описан в README.
+data/raw/*
+data/processed/*
+!data/**/.gitkeep
+
+# Обученные модели и снимки состояния игроков — воспроизводятся из данных
+models/*
+!models/.gitkeep
+
+# Логи
+*.log
+logs/

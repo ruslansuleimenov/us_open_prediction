@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "usopen"
+version = "0.1.0"
+description = "predict us open 2026 winner"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "matplotlib",
+    "rich",
+    "typer",
+]
+
+# [project.scripts]
+# usopen = "usopen.cli:app"   # раскомментировать, когда появится src/usopen/cli.py
+
+[tool.setuptools.packages.find]
+where = ["src"]
