@@ -16,8 +16,8 @@ dependencies = [
     "typer",
 ]
 
-# [project.scripts]
-# usopen = "usopen.cli:app"   # раскомментировать, когда появится src/usopen/cli.py
+[project.scripts]
+usopen = "usopen.cli:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]

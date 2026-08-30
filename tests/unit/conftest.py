@@ -1,4 +1,3 @@
-# tests/unit/conftest.py
 import pytest
 
 HEADER = (

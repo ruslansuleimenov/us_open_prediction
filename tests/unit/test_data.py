@@ -1,6 +1,6 @@
 import pytest
 
-from usopen.data import ROUND_ORDER, SENTINEL_COLS, load_matches
+from usopen.data import ROUND_ORDER, SENTINEL_COLS, load_matches, SERIES_CANONICAL
 
 BRISBANE = (
     "Brisbane,2025-01-01,ATP250,Outdoor,Hard,1st Round,3,"
@@ -18,13 +18,13 @@ class TestLoadMatches:
         brisbane = df.loc[df["Tournament"] == "Brisbane"].iloc[0]
         citi = df.loc[df["Tournament"] == "Citi Open"].iloc[0]
 
-        # -1 нигде не выжил
+        # no -1 survived anywhere
         assert not (df[SENTINEL_COLS] == -1).any().any()
 
-        # там, где он был, теперь NaN
+        # where it was, there is now NaN
         assert brisbane[["Rank_1", "Pts_1", "Odd_1"]].isna().all()
 
-        # там, где его не было, значения нетронуты
+        # where it was not, values are untouched
         assert brisbane["Rank_2"] == 50
         assert citi[SENTINEL_COLS].notna().all()
         assert citi["Rank_1"] == 102
@@ -32,7 +32,7 @@ class TestLoadMatches:
     def test_sentinel_columns_stay_numeric(self, write_csv):
         df = load_matches(write_csv(BRISBANE, CITI_OPEN))
 
-        # главный баг дня: pd.NA превращал колонки в object
+        # the bug this guards against: pd.NA turned these columns into object
         assert (df[SENTINEL_COLS].dtypes != "object").all()
         assert df["Rank_1"].dtype == "float64"
 
@@ -40,14 +40,20 @@ class TestLoadMatches:
         unknown = BRISBANE.replace("1st Round", "Qualifying")
         assert "Qualifying" not in ROUND_ORDER
 
-        # смесь валидной и неизвестной строки: на однострочной фикстуре
-        # ассерт .all() внутри загрузчика неотличим от .any()
+        # a mix of a valid and an unknown row: on a single-row fixture the
+        # loader's .all() assert would be indistinguishable from .any()
+        with pytest.raises(AssertionError):
+            load_matches(write_csv(CITI_OPEN, unknown))
+
+    def test_unknown_series_is_rejected(self, write_csv):
+        unknown = BRISBANE.replace("ATP250", "ATP333")
+        assert "ATP333" not in SERIES_CANONICAL
         with pytest.raises(AssertionError):
             load_matches(write_csv(CITI_OPEN, unknown))
 
     def test_sorted_by_date_then_round(self, write_csv):
-        # в файле порядок заведомо неверный: поздняя дата первой,
-        # а внутри одного дня полуфинал раньше четвертьфинала
+        # the file is deliberately out of order: the later date comes first,
+        # and within one day the semifinal precedes the quarterfinal
         late = CITI_OPEN
         semi = BRISBANE.replace("1st Round", "Semifinals")
         quarter = BRISBANE.replace("1st Round", "Quarterfinals")
@@ -64,8 +70,8 @@ class TestLoadMatches:
         assert list(df.index) == [0, 1]
 
     def test_round_robin_precedes_knockout(self, write_csv):
-        # групповой этап Итогового турнира идёт до сетки,
-        # хотя лексически "Round Robin" ни на что не похож
+        # the Tour Finals group stage comes before the knockout rounds,
+        # even though "Round Robin" sorts nowhere near them lexically
         rr = BRISBANE.replace("ATP250,Outdoor,Hard,1st Round", "Masters Cup,Indoor,Hard,Round Robin")
         final = BRISBANE.replace("1st Round", "The Final")
         semi = BRISBANE.replace("1st Round", "Semifinals")
